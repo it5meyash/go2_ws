@@ -8,7 +8,7 @@ from ament_index_python import get_package_share_path
 def generate_launch_description():
 
     urdf_path = os.path.join(get_package_share_path('go2_description'),
-                               'xacro', 'robot.xacro')
+                               'xacro', 'go2_description.xacro')
     
     rviz_config_path = os.path.join(get_package_share_path('go2_description'),
                               'rviz', 'go2_config.rviz')

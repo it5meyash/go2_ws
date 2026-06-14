@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.8)
-project(go2_description)
+project(go2_bringup)
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
@@ -9,7 +9,8 @@ endif()
 find_package(ament_cmake REQUIRED)
 
 install(
-  DIRECTORY urdf dae launch rviz meshes xacro config
-  DESTINATION share/${PROJECT_NAME}/
+  DIRECTORY launch 
+  DESTINATION share/${PROJECT_NAME}/ 
 )
+
 ament_package()
