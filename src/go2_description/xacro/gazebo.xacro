@@ -10,10 +10,15 @@
         name="gz_ros2_control::GazeboSimROS2ControlPlugin">
 
       <parameters>
-        $(find go2_description)/config/controllers.yaml
+        /home/yash/Desktop/ros2_ws2/install/go2_description/share/go2_description/config/controllers.yaml
       </parameters>
 
     </plugin>
+
+    <!--gz-sim-joint-state-publisher-systemplugin
+      filename="gz-sim-joint-state-publisher-system"
+      name="gz::sim::systems::JointStatePublisher"/ -->
+
   </gazebo>
 
   <!-- trunk -->
