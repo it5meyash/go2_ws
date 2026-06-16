@@ -40,4 +40,14 @@
           output="screen"
           args="-d $(var rviz_config_path)" />
 
+     <node pkg="controller_manager"
+           exec="spawner"
+           args="joint_state_broadcaster"
+           output="screen" />
+
+     <node pkg="controller_manager"
+           exec="spawner"
+           args="effort_controller"
+           output="screen" />
+
 </launch>
