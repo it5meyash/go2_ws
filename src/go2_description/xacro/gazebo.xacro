@@ -9,9 +9,7 @@
         filename="libgz_ros2_control-system.so"
         name="gz_ros2_control::GazeboSimROS2ControlPlugin">
 
-      <parameters>
-        /home/yash/Desktop/ros2_ws2/install/go2_description/share/go2_description/config/controllers.yaml
-      </parameters>
+      <parameters>$(find go2_description)/config/controllers.yaml</parameters>
 
     </plugin>
 
