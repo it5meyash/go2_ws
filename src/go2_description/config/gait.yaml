@@ -1,55 +1,38 @@
+/**:
+  ros__parameters:
+    links_map.left_front: ["FL_hip", "FL_thigh", "FL_calf", "FL_foot"]
+    links_map.right_front: ["FR_hip", "FR_thigh", "FR_calf", "FR_foot"]
+    links_map.left_hind: ["RL_hip", "RL_thigh", "RL_calf", "RL_foot"]
+    links_map.right_hind: ["RR_hip", "RR_thigh", "RR_calf", "RR_foot"]
+    links_map.base: trunk
+
+    joints_map.left_front: ["FL_hip_joint", "FL_thigh_joint", "FL_calf_joint"]
+    joints_map.right_front: ["FR_hip_joint", "FR_thigh_joint", "FR_calf_joint"]
+    joints_map.left_hind: ["RL_hip_joint", "RL_thigh_joint", "RL_calf_joint"]
+    joints_map.right_hind: ["RR_hip_joint", "RR_thigh_joint", "RR_calf_joint"]
+
+    gait.pantograph_leg: false
+    gait.max_linear_velocity_x: 0.5
+    gait.max_linear_velocity_y: 0.25
+    gait.max_angular_velocity_z: 0.7
+    gait.com_x_translation: 0.0
+    gait.swing_height: 0.04
+    gait.stance_depth: 0.0
+    gait.stance_duration: 0.25
+    gait.nominal_height: 0.28
+    gait.knee_orientation: ">>"
+    gait.odom_scaler: 1.0
+
+    orientation_from_imu: false
+
 quadruped_controller_node:
   ros__parameters:
     gazebo: false
     publish_joint_states: true
-    publish_foot_contacts: false
+    publish_foot_contacts: true
     publish_joint_control: true
     joint_controller_topic: joint_trajectory_controller/joint_trajectory
     loop_rate: 200.0
-
-    gait:
-      pantograph_leg: false
-      max_linear_velocity_x: 0.5
-      max_linear_velocity_y: 0.25
-      max_angular_velocity_z: 0.7
-      com_x_translation: 0.0
-      swing_height: 0.04
-      stance_depth: 0.0
-      stance_duration: 0.25
-      nominal_height: 0.30
-      knee_orientation: ">>"
-
-    # 4 entries per leg: base/root link -> hip link -> upper_leg link -> lower_leg(foot) link
-    # order must end at the leg's last link in the kinematic chain
-    links_map:
-      left_front: ["base_link", "FL_hip", "FL_thigh", "FL_foot"]
-      right_front: ["base_link", "FR_hip", "FR_thigh", "FR_foot"]
-      left_hind: ["base_link", "RL_hip", "RL_thigh", "RL_foot"]
-      right_hind: ["base_link", "RR_hip", "RR_thigh", "RR_foot"]
-
-    # 3 entries per leg: hip joint, thigh joint, calf joint
-    joints_map:
-      left_front: ["FL_hip_joint", "FL_thigh_joint", "FL_calf_joint"]
-      right_front: ["FR_hip_joint", "FR_thigh_joint", "FR_calf_joint"]
-      left_hind: ["RL_hip_joint", "RL_thigh_joint", "RL_calf_joint"]
-      right_hind: ["RR_hip_joint", "RR_thigh_joint", "RR_calf_joint"]
-
-state_estimation_node:
-  ros__parameters:
-    links_map:
-      base: base_link
-    orientation_from_imu: false
-    gait:
-      odom_scaler: 1.0
-      pantograph_leg: false
-      max_linear_velocity_x: 0.5
-      max_linear_velocity_y: 0.25
-      max_angular_velocity_z: 0.7
-      com_x_translation: 0.0
-      swing_height: 0.04
-      stance_depth: 0.0
-      stance_duration: 0.25
-      nominal_height: 0.30
 
 message_relay_node:
   ros__parameters:
