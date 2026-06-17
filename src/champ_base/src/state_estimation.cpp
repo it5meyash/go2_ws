@@ -41,6 +41,9 @@ StateEstimation::StateEstimation():
 {
     last_vel_time_ = clock_.now();
     last_sync_time_ = clock_.now();
+    x_pos_ = 0.0;
+    y_pos_ = 0.0;
+    heading_ = 0.0;
     base_broadcaster_ =
       std::make_unique<tf2_ros::TransformBroadcaster>(*this);
       
