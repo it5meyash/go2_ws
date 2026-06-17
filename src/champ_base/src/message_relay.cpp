@@ -28,7 +28,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <message_relay.h>
 
 MessageRelay::MessageRelay():
-     Node("message_relay_node")
+     Node("message_relay_node", rclcpp::NodeOptions()
+                        .allow_undeclared_parameters(true)
+                        .automatically_declare_parameters_from_overrides(true))
 {    
     imu_data_.orientation.w = 1.0;
 
