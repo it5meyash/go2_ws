@@ -38,7 +38,7 @@ include_directories(
   /home/yash/Desktop/ros2_ws2/install/champ/include/champ
 )
 
-install(DIRECTORY config
+install(DIRECTORY config launch
   DESTINATION share/${PROJECT_NAME}
 )
 
