@@ -111,6 +111,7 @@ StateEstimation::StateEstimation():
     base_link_frame_ = node_namespace_ + base_name_;
 
     std::chrono::milliseconds period(static_cast<int>(1000/50));
+    RCLCPP_INFO(this->get_logger(), "Timer period: %d ms", period.count());
 
     odom_data_timer_ = this->create_wall_timer(
          std::chrono::duration_cast<std::chrono::milliseconds>(period),
@@ -150,6 +151,7 @@ void StateEstimation::imu_callback_(const sensor_msgs::msg::Imu::SharedPtr msg)
 
 void StateEstimation::publishFootprintToOdom_()
 {
+    RCLCPP_INFO(this->get_logger(), "publishFootprintToOdom_ called");
     odometry_.getVelocities(current_velocities_, rosTimeToChampTime(clock_.now()));
 
     rclcpp::Time current_time = clock_.now();
@@ -200,6 +202,22 @@ void StateEstimation::publishFootprintToOdom_()
     odom.twist.covariance[0] = 0.3;
     odom.twist.covariance[7] = 0.3;
     odom.twist.covariance[35] = 0.017;
+
+    // Broadcast the transform from odom to base_footprint
+    geometry_msgs::msg::TransformStamped transform_stamped;
+    transform_stamped.header.stamp = current_time;
+    transform_stamped.header.stamp.nanosec = 0;  // Match odom message timestamp handling
+    transform_stamped.header.frame_id = odom_frame_;
+    transform_stamped.child_frame_id = base_footprint_frame_;
+    transform_stamped.transform.translation.x = x_pos_;
+    transform_stamped.transform.translation.y = y_pos_;
+    transform_stamped.transform.translation.z = 0.0;
+    transform_stamped.transform.rotation.x = odom_quat.x();
+    transform_stamped.transform.rotation.y = odom_quat.y();
+    transform_stamped.transform.rotation.z = odom_quat.z();
+    transform_stamped.transform.rotation.w = odom_quat.w();
+    base_broadcaster_->sendTransform(transform_stamped);
+    RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 5000, "Broadcasting transform: odom=%s -> base_footprint=%s at (%.2f, %.2f, %.2f)", odom_frame_.c_str(), base_footprint_frame_.c_str(), x_pos_, y_pos_, 0.0);
     
     footprint_to_odom_publisher_->publish(odom);
 }
@@ -417,4 +435,15 @@ void StateEstimation::publishBaseToFootprint_()
     pose_msg.pose.pose.orientation.w = -quaternion.w();
 
     base_to_footprint_publisher_->publish(pose_msg);
+
+    // Broadcast transform from base_footprint to base_link
+    geometry_msgs::msg::TransformStamped tf_msg;
+    tf_msg.header.stamp = pose_msg.header.stamp;
+    tf_msg.header.frame_id = base_footprint_frame_;
+    tf_msg.child_frame_id = base_link_frame_;
+    tf_msg.transform.translation.x = pose_msg.pose.pose.position.x;
+    tf_msg.transform.translation.y = pose_msg.pose.pose.position.y;
+    tf_msg.transform.translation.z = pose_msg.pose.pose.position.z;
+    tf_msg.transform.rotation = pose_msg.pose.pose.orientation;
+    base_broadcaster_->sendTransform(tf_msg);
 }

@@ -118,6 +118,7 @@ void QuadrupedController::cmdVelCallback_(const geometry_msgs::msg::Twist::Share
     req_vel_.linear.x = msg->linear.x;
     req_vel_.linear.y = msg->linear.y;
     req_vel_.angular.z = msg->angular.z;
+    RCLCPP_INFO(this->get_logger(), "Received cmd_vel: linear.x=%f, linear.y=%f, angular.z=%f", msg->linear.x, msg->linear.y, msg->angular.z);
 }
 
 void QuadrupedController::cmdPoseCallback_(const geometry_msgs::msg::Pose::SharedPtr msg)
