@@ -47,7 +47,7 @@
 
      <node pkg="controller_manager"
            exec="spawner"
-           args="effort_controller"
+           args="joint_trajectory_controller"
            output="screen" />
 
 </launch>
