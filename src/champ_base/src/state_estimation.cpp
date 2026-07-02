@@ -111,7 +111,7 @@ StateEstimation::StateEstimation():
     base_link_frame_ = node_namespace_ + base_name_;
 
     std::chrono::milliseconds period(static_cast<int>(1000/50));
-    RCLCPP_INFO(this->get_logger(), "Timer period: %d ms", period.count());
+    RCLCPP_INFO(this->get_logger(), "Timer period: %ld ms", static_cast<long>(period.count()));
 
     odom_data_timer_ = this->create_wall_timer(
          std::chrono::duration_cast<std::chrono::milliseconds>(period),
@@ -156,7 +156,7 @@ void StateEstimation::publishFootprintToOdom_()
 
     rclcpp::Time current_time = clock_.now();
 
-    double vel_dt = (current_time - last_vel_time_).nanoseconds()/1e-9;
+    double vel_dt = (current_time - last_vel_time_).seconds();
     last_vel_time_ = current_time;
     //rotate in the z axis
     //https://en.wikipedia.org/wiki/Rotation_matrix
@@ -353,7 +353,9 @@ void StateEstimation::publishBaseToFootprint_()
         x_axis.normalize();
 
         // get Z from IMU as we do not have enough contact points to define a plane
-        z_axis = imu_rotation.inverse() * z_axis;
+        tf2::Quaternion imu_quat;
+        imu_rotation.getRotation(imu_quat);
+        z_axis = tf2::quatRotate(imu_quat.inverse(), z_axis);
         y_axis = z_axis.cross(x_axis);
         // and find the last vector which just has to be perpendicular to y and z
         x_axis = y_axis.cross(z_axis);
@@ -368,7 +370,9 @@ void StateEstimation::publishBaseToFootprint_()
         y_axis.normalize();
 
         // get Z from IMU as we do not have enough contact points to define a plane
-        z_axis = imu_rotation.inverse() * z_axis;
+        tf2::Quaternion imu_quat;
+        imu_rotation.getRotation(imu_quat);
+        z_axis = tf2::quatRotate(imu_quat.inverse(), z_axis);
         x_axis = y_axis.cross(z_axis);
         // and find the last vector which just has to be perpendicular to x and z
         y_axis = z_axis.cross(x_axis);
@@ -384,7 +388,9 @@ void StateEstimation::publishBaseToFootprint_()
         axis1.normalize();
 
         // get Z from IMU as we do not have enough contact points to define a plane
-        z_axis = imu_rotation.inverse() * z_axis;
+        tf2::Quaternion imu_quat;
+        imu_rotation.getRotation(imu_quat);
+        z_axis = tf2::quatRotate(imu_quat.inverse(), z_axis);
         auto axis2 = z_axis.cross(axis1);
         z_axis = axis1.cross(axis2);
 
@@ -397,7 +403,9 @@ void StateEstimation::publishBaseToFootprint_()
     else if (foot_in_contact == 1 || no_contact)
     {
       // Zero or one feet in contact... There isn't much to do, so just take Z from IMU
-      z_axis = imu_rotation.inverse() * z_axis;
+      tf2::Quaternion imu_quat;
+      imu_rotation.getRotation(imu_quat);
+      z_axis = tf2::quatRotate(imu_quat.inverse(), z_axis);
 
       // project base_link 1,0,0 axis along the computed plane normal
       x_axis = (x_axis - (x_axis.dot(z_axis) * z_axis)).normalized();
@@ -425,14 +433,40 @@ void StateEstimation::publishBaseToFootprint_()
     pose_msg.pose.covariance[28] = 0.0001;
     pose_msg.pose.covariance[35] = 0.017;
 
-    pose_msg.pose.pose.position.x = 0.0;
-    pose_msg.pose.pose.position.y = 0.0;
-    pose_msg.pose.pose.position.z = -(robot_height / (float)foot_in_contact);
+    // Calculate height of base_link (trunk) above ground by averaging
+    // the negative Z-component of each contacting foot's position
+    // after rotating to world frame using the estimated orientation
+    float sum_z = 0.0;
+    int valid_feet = 0;
+    for (size_t i = 0; i < 4; i++)
+    {
+        if (base_.legs[i]->in_contact())
+        {
+            tf2::Vector3 foot_pos_base_link(current_foot_positions_[i].X(),
+                                            current_foot_positions_[i].Y(),
+                                            current_foot_positions_[i].Z());
+            tf2::Vector3 foot_pos_world = tf2::quatRotate(quaternion, foot_pos_base_link);
+            // If foot is on ground, its world Z position should be 0:
+            // 0 = trunk_height_world + foot_pos_world.z
+            // Therefore: trunk_height_world = -foot_pos_world.z
+            sum_z += -foot_pos_world.z();
+            valid_feet++;
+        }
+    }
+    if (valid_feet > 0)
+    {
+        pose_msg.pose.pose.position.z = sum_z / valid_feet;
+    }
+    else
+    {
+        // Fallback to previous method if no feet in contact (less accurate)
+        pose_msg.pose.pose.position.z = -(robot_height / (float)foot_in_contact);
+    }
 
     pose_msg.pose.pose.orientation.x = quaternion.x();
     pose_msg.pose.pose.orientation.y = quaternion.y();
     pose_msg.pose.pose.orientation.z = quaternion.z();
-    pose_msg.pose.pose.orientation.w = -quaternion.w();
+    pose_msg.pose.pose.orientation.w = quaternion.w();
 
     base_to_footprint_publisher_->publish(pose_msg);
 

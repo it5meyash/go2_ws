@@ -4,7 +4,7 @@
     links_map.right_front: ["FR_hip", "FR_thigh", "FR_calf", "FR_foot"]
     links_map.left_hind: ["RL_hip", "RL_thigh", "RL_calf", "RL_foot"]
     links_map.right_hind: ["RR_hip", "RR_thigh", "RR_calf", "RR_foot"]
-    links_map.base: trunk
+    links_map.base: base
 
     joints_map.left_front: ["FL_hip_joint", "FL_thigh_joint", "FL_calf_joint"]
     joints_map.right_front: ["FR_hip_joint", "FR_thigh_joint", "FR_calf_joint"]
